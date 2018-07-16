@@ -86,14 +86,8 @@ class WorkerConfiguration(LoggingMixin):
 
     def _get_environment(self):
         """Defines any necessary environment variables for the pod executor"""
-        dags_folder = os.path.join(
-            self.worker_airflow_dags,
-            self.GIT_SYNC_DEST,
-            self.kube_config.git_subpath
-        )
-
         env = {
-            'AIRFLOW__CORE__DAGS_FOLDER': dags_folder,
+            'AIRFLOW__CORE__DAGS_FOLDER': self.worker_airflow_dags,
             'AIRFLOW__CORE__EXECUTOR': 'LocalExecutor'
         }
         if self.kube_config.airflow_configmap:
