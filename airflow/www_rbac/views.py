@@ -688,13 +688,14 @@ class Airflow(AirflowBaseView):
         try:
             from airflow.executors import GetDefaultExecutor
             from airflow.executors.celery_executor import CeleryExecutor
+            from airflow.contrib.executors.kubernetes_executor import KubernetesExecutor
             executor = GetDefaultExecutor()
-            if not isinstance(executor, CeleryExecutor):
-                flash("Only works with the CeleryExecutor, sorry", "error")
+            if not isinstance(executor, CeleryExecutor) and not isinstance(executor, KubernetesExecutor):
+                flash("Only works with the CeleryExecutor or KubernetesExecutor, sorry", "error")
                 return redirect(origin)
         except ImportError:
             # in case CeleryExecutor cannot be imported it is not active either
-            flash("Only works with the CeleryExecutor, sorry", "error")
+            flash("Only works with the CeleryExecutor or KubernetesExecutor, sorry", "error")
             return redirect(origin)
 
         ti = models.TaskInstance(task=task, execution_date=execution_date)
