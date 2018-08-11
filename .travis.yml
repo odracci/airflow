@@ -32,8 +32,11 @@ env:
     - TOX_ENV=py35-backend_mysql PYTHON_VERSION=3
     - TOX_ENV=py35-backend_sqlite PYTHON_VERSION=3
     - TOX_ENV=py35-backend_postgres PYTHON_VERSION=3
-    - TOX_ENV=py27-backend_postgres KUBERNETES_VERSION=v1.9.0
-    - TOX_ENV=py35-backend_postgres KUBERNETES_VERSION=v1.10.0 PYTHON_VERSION=3
+    - TOX_ENV=py27-backend_postgres KUBERNETES_VERSION=v1.9.0 GIT_SYNC=0
+    - TOX_ENV=py35-backend_postgres KUBERNETES_VERSION=v1.10.0 PYTHON_VERSION=3 GIT_SYNC=0
+    - TOX_ENV=py27-backend_postgres KUBERNETES_VERSION=v1.9.0 GIT_SYNC=1
+    - TOX_ENV=py35-backend_postgres KUBERNETES_VERSION=v1.10.0 PYTHON_VERSION=3 GIT_SYNC=1
+
 cache:
   directories:
     - $HOME/.wheelhouse/

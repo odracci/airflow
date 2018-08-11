@@ -27,6 +27,8 @@ if [ $? -eq 0 ]; then
   eval $ENVCONFIG
 fi
 
+set -e
+
 echo "Airflow directory $AIRFLOW_ROOT"
 echo "Airflow Docker directory $DIRNAME"
 
