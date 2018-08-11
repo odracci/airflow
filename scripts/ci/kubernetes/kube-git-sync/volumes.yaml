@@ -15,21 +15,51 @@
 #  specific language governing permissions and limitations      *
 #  under the License.                                           *
 
-set -o xtrace
-set -e
-
-echo "This script downloads minikube, starts a driver=None minikube cluster, builds the airflow source and docker image, and then deploys airflow onto kubernetes"
-echo "For development, start minikube yourself (ie: minikube start) then run this script as you probably do not want a driver=None minikube cluster"
-
-DIRNAME=$(cd "$(dirname "$0")"; pwd)
-
-$DIRNAME/minikube/start_minikube.sh
-$DIRNAME/docker/build.sh
-if [ "${GIT_SYNC:-0}" = 0 ];
-then
-    $DIRNAME/kube/deploy.sh
-else
-    $DIRNAME/kube-git-sync/deploy.sh
-fi
-
-echo "Airflow environment on kubernetes is good to go!"
+# The backing volume can be anything you want, it just needs to be `ReadWriteOnce`
+# I'm using hostPath since minikube is nice for testing, but any (non-local) volume will work on a real cluster
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: airflow-logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /airflow-logs/
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: airflow-logs
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: test-volume
+spec:
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 2Gi
+  hostPath:
+    path: /airflow-dags/
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: test-volume
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi

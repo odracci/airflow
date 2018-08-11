@@ -38,7 +38,7 @@ class WorkerConfiguration(LoggingMixin):
     def _get_init_containers(self, volume_mounts):
         """When using git to retrieve the DAGs, use the GitSync Init Container"""
         # If we're using volume claims to mount the dags, no init container is needed
-        if self.kube_config.dags_volume_claim:
+        if self.kube_config.dags_volume_claim or self.kube_config.dags_volume_host:
             return []
 
         # Otherwise, define a git-sync init container
@@ -50,10 +50,13 @@ class WorkerConfiguration(LoggingMixin):
             'value': self.kube_config.git_branch
         }, {
             'name': 'GIT_SYNC_ROOT',
-            'value': '/tmp'
+            'value': self.kube_config.git_sync_root
         }, {
             'name': 'GIT_SYNC_DEST',
-            'value': 'dags'
+            'value': self.kube_config.git_sync_dest
+        }, {
+            'name': 'GIT_SYNC_DEPTH',
+            'value': '1'
         }, {
             'name': 'GIT_SYNC_ONE_TIME',
             'value': 'true'
@@ -69,6 +72,7 @@ class WorkerConfiguration(LoggingMixin):
                 'value': self.kube_config.git_password
             })
 
+        volume_mounts[0]['mountPath'] = self.kube_config.git_sync_root
         volume_mounts[0]['readOnly'] = False
         return [{
             'name': self.kube_config.git_sync_init_container_name,
@@ -86,11 +90,18 @@ class WorkerConfiguration(LoggingMixin):
 
         if self.kube_config.airflow_configmap:
             env['AIRFLOW__CORE__AIRFLOW_HOME'] = self.worker_airflow_home
-        if self.kube_config.worker_dags_folder:
-            env['AIRFLOW__CORE__DAGS_FOLDER'] = self.kube_config.worker_dags_folder
+            env['AIRFLOW__CORE__DAGS_FOLDER'] = self.worker_airflow_dags
         if (not self.kube_config.airflow_configmap and
                 'AIRFLOW__CORE__SQL_ALCHEMY_CONN' not in self.kube_config.kube_secrets):
             env['AIRFLOW__CORE__SQL_ALCHEMY_CONN'] = conf.get("core", "SQL_ALCHEMY_CONN")
+        if self.kube_config.git_dags_folder_mount_point:
+            # /root/airflow/dags/repo/dags
+            dag_volume_mount_path = os.path.join(
+                self.kube_config.git_dags_folder_mount_point,
+                self.kube_config.git_sync_dest,  # repo
+                self.kube_config.git_subpath     # dags
+            )
+            env['AIRFLOW__CORE__DAGS_FOLDER'] = dag_volume_mount_path
         return env
 
     def _get_secrets(self):
@@ -112,13 +123,18 @@ class WorkerConfiguration(LoggingMixin):
         dags_volume_name = 'airflow-dags'
         logs_volume_name = 'airflow-logs'
 
-        def _construct_volume(name, claim):
+        def _construct_volume(name, claim, host):
             volume = {
                 'name': name
             }
             if claim:
                 volume['persistentVolumeClaim'] = {
                     'claimName': claim
+                }
+            elif host:
+                volume['hostPath'] = {
+                    'path': host,
+                    'type': ''
                 }
             else:
                 volume['emptyDir'] = {}
@@ -127,23 +143,21 @@ class WorkerConfiguration(LoggingMixin):
         volumes = [
             _construct_volume(
                 dags_volume_name,
-                self.kube_config.dags_volume_claim
+                self.kube_config.dags_volume_claim,
+                self.kube_config.dags_volume_host
             ),
             _construct_volume(
                 logs_volume_name,
-                self.kube_config.logs_volume_claim
+                self.kube_config.logs_volume_claim,
+                self.kube_config.logs_volume_host
             )
         ]
 
-        dag_volume_mount_path = ""
-
-        if self.kube_config.dags_volume_claim:
+        if self.kube_config.dags_volume_claim or self.kube_config.dags_volume_host:
             dag_volume_mount_path = self.worker_airflow_dags
         else:
-            dag_volume_mount_path = os.path.join(
-                self.worker_airflow_dags,
-                self.kube_config.git_subpath
-            )
+            dag_volume_mount_path = self.kube_config.git_dags_folder_mount_point
+
         dags_volume_mount = {
             'name': dags_volume_name,
             'mountPath': dag_volume_mount_path,
