@@ -137,6 +137,10 @@ class KubeConfig:
         self.git_branch = conf.get(self.kubernetes_section, 'git_branch')
         # Optionally, the directory in the git repository containing the dags
         self.git_subpath = conf.get(self.kubernetes_section, 'git_subpath')
+        # Optionally,
+        self.git_sync_root = conf.get(self.kubernetes_section, 'git_sync_root')
+        # Optionally,
+        self.git_sync_dest = conf.get(self.kubernetes_section, 'git_sync_dest')
 
         # Optionally a user may supply a `git_user` and `git_password` for private
         # repositories
