@@ -142,8 +142,13 @@ class KubernetesExecutorTest(unittest.TestCase):
             'dags/{dag_id}/dag_runs'.format(host=host, dag_id=dag_id),
             json={}
         )
+        try:
+            result_json = result.json()
+        except ValueError:
+            result_json = str(result)
+
         self.assertEqual(result.status_code, 200, "Could not trigger a DAG-run: {result}"
-                         .format(result=result.json()))
+                         .format(result=result_json))
 
         time.sleep(1)
 
