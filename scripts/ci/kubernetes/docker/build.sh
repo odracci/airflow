@@ -31,6 +31,8 @@ if [ "${VM_DRIVER:-none}" != "none" ]; then
     fi
 fi
 
+set -e
+
 echo "Airflow directory $AIRFLOW_ROOT"
 echo "Airflow Docker directory $DIRNAME"
 

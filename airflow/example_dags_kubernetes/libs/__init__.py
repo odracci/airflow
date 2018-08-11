@@ -16,29 +16,3 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-from __future__ import print_function
-import airflow
-from airflow.operators.python_operator import PythonOperator
-from libs.helper import print_stuff
-from airflow.models import DAG
-
-args = {
-    'owner': 'airflow',
-    'start_date': airflow.utils.dates.days_ago(2)
-}
-
-dag = DAG(
-    dag_id='example_kubernetes_annotation', default_args=args,
-    schedule_interval=None
-)
-
-
-# You can use annotations on your kubernetes pods!
-start_task = PythonOperator(
-    task_id="start_task", python_callable=print_stuff, dag=dag,
-    executor_config={
-        "KubernetesExecutor": {
-            "annotations": {"test": "annotation"}
-        }
-    }
-)
