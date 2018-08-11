@@ -50,10 +50,13 @@ class WorkerConfiguration(LoggingMixin):
             'value': self.kube_config.git_branch
         }, {
             'name': 'GIT_SYNC_ROOT',
-            'value': '/tmp'
+            'value': self.kube_config.git_sync_root
         }, {
             'name': 'GIT_SYNC_DEST',
-            'value': 'dags'
+            'value': self.kube_config.git_sync_dest
+        }, {
+            'name': 'GIT_SYNC_DEPTH',
+            'value': '1'
         }, {
             'name': 'GIT_SYNC_ONE_TIME',
             'value': 'true'
@@ -69,6 +72,7 @@ class WorkerConfiguration(LoggingMixin):
                 'value': self.kube_config.git_password
             })
 
+        volume_mounts[0]['mountPath'] = self.kube_config.git_sync_root
         volume_mounts[0]['readOnly'] = False
         return [{
             'name': self.kube_config.git_sync_init_container_name,
@@ -87,8 +91,7 @@ class WorkerConfiguration(LoggingMixin):
 
         if self.kube_config.airflow_configmap:
             env['AIRFLOW__CORE__AIRFLOW_HOME'] = self.worker_airflow_home
-        if self.kube_config.worker_dags_folder:
-            env['AIRFLOW__CORE__DAGS_FOLDER'] = self.kube_config.worker_dags_folder
+            env['AIRFLOW__CORE__DAGS_FOLDER'] = self.worker_airflow_dags
         return env
 
     def _get_secrets(self):
@@ -133,13 +136,22 @@ class WorkerConfiguration(LoggingMixin):
             )
         ]
 
-        dag_volume_mount_path = ""
-
         if self.kube_config.dags_volume_claim:
             dag_volume_mount_path = self.worker_airflow_dags
         else:
+            # given worker_airflow_dags=/root/airflow/dags/dags/airflow/example_dags
+            # the mount path would be /root/airflow/dags because
+            # /root/airflow is airflow home
+            # /dags/ is the symbolic link created by git-sync
+            # /airflow/example_dags is git_subpath
+            # path_to_remove = os.path.join(
+            #     self.kube_config.git_sync_dest,
+            #     self.kube_config.git_subpath
+            # )
+            # dag_volume_mount_path = self.worker_airflow_dags[:-len(path_to_remove)]
             dag_volume_mount_path = os.path.join(
                 self.worker_airflow_dags,
+                self.kube_config.git_sync_dest,
                 self.kube_config.git_subpath
             )
         dags_volume_mount = {
