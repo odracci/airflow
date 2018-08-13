@@ -152,10 +152,8 @@ class WorkerConfiguration(LoggingMixin):
             )
         ]
 
-        if self.kube_config.dags_volume_claim:
+        if self.kube_config.dags_volume_claim or self.kube_config.dags_volume_host:
             dag_volume_mount_path = self.worker_airflow_dags
-        elif self.kube_config.dags_volume_host:
-            dag_volume_mount_path = self.kube_config.dags_volume_host
         else:
             dag_volume_mount_path = self.kube_config.git_dags_folder_mount_point
 
