@@ -152,6 +152,8 @@ class KubeConfig:
         # DAGs directly
         self.dags_volume_claim = conf.get(self.kubernetes_section, 'dags_volume_claim')
 
+        self.logs_volume_host = conf.get(self.kubernetes_section, 'logs_volume_host')
+
         # This prop may optionally be set for PV Claims and is used to write logs
         self.logs_volume_claim = conf.get(self.kubernetes_section, 'logs_volume_claim')
 
@@ -164,6 +166,10 @@ class KubeConfig:
         # on a SubPath
         self.logs_volume_subpath = conf.get(
             self.kubernetes_section, 'logs_volume_subpath')
+
+        # NOTE: The user may optionally use a volume claim to mount a PV containing
+        # DAGs directly
+        self.dags_volume_host = conf.get(self.kubernetes_section, 'dags_volume_host')
 
         # This prop may optionally be set for PV Claims and is used to write logs
         self.base_log_folder = configuration.get(self.core_section, 'base_log_folder')
@@ -202,10 +208,13 @@ class KubeConfig:
         self._validate()
 
     def _validate(self):
-        if not self.dags_volume_claim and (not self.git_repo or not self.git_branch):
+        if not self.dags_volume_claim \
+           and (not self.git_repo or not self.git_branch or not self.git_dags_folder_mount_point) \
+           and not self.dags_volume_host:
             raise AirflowConfigException(
                 'In kubernetes mode the following must be set in the `kubernetes` '
-                'config section: `dags_volume_claim` or `git_repo and git_branch`')
+                'config section: `dags_volume_claim` or `dags_volume_host` or '
+                '`git_repo and git_branch and git_dags_folder_mount_point`')
 
 
 class KubernetesJobWatcher(multiprocessing.Process, LoggingMixin, object):

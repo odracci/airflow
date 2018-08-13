@@ -38,7 +38,7 @@ class WorkerConfiguration(LoggingMixin):
     def _get_init_containers(self, volume_mounts):
         """When using git to retrieve the DAGs, use the GitSync Init Container"""
         # If we're using volume claims to mount the dags, no init container is needed
-        if self.kube_config.dags_volume_claim:
+        if self.kube_config.dags_volume_claim or self.kube_config.dags_volume_host:
             return []
 
         # Otherwise, define a git-sync init container
@@ -92,7 +92,7 @@ class WorkerConfiguration(LoggingMixin):
         if self.kube_config.airflow_configmap:
             env['AIRFLOW__CORE__AIRFLOW_HOME'] = self.worker_airflow_home
             env['AIRFLOW__CORE__DAGS_FOLDER'] = self.worker_airflow_dags
-        if not self.kube_config.dags_volume_claim:
+        if self.kube_config.git_dags_folder_mount_point:
             # /usr/local/airflow/dags/repo/dags
             dag_volume_mount_path = os.path.join(
                 self.kube_config.git_dags_folder_mount_point,
@@ -122,13 +122,18 @@ class WorkerConfiguration(LoggingMixin):
         dags_volume_name = 'airflow-dags'
         logs_volume_name = 'airflow-logs'
 
-        def _construct_volume(name, claim):
+        def _construct_volume(name, claim, host):
             volume = {
                 'name': name
             }
             if claim:
                 volume['persistentVolumeClaim'] = {
                     'claimName': claim
+                }
+            elif host:
+                volume['hostPath'] = {
+                    'path': host,
+                    'type': ''
                 }
             else:
                 volume['emptyDir'] = {}
@@ -137,34 +142,23 @@ class WorkerConfiguration(LoggingMixin):
         volumes = [
             _construct_volume(
                 dags_volume_name,
-                self.kube_config.dags_volume_claim
+                self.kube_config.dags_volume_claim,
+                self.kube_config.dags_volume_host
             ),
             _construct_volume(
                 logs_volume_name,
-                self.kube_config.logs_volume_claim
+                self.kube_config.logs_volume_claim,
+                self.kube_config.logs_volume_host
             )
         ]
 
         if self.kube_config.dags_volume_claim:
             dag_volume_mount_path = self.worker_airflow_dags
+        elif self.kube_config.dags_volume_host:
+            dag_volume_mount_path = self.kube_config.dags_volume_host
         else:
-            # given worker_airflow_dags=/root/airflow/dags/dags/airflow/example_dags
-            # the mount path would be /root/airflow/dags because
-            # /root/airflow is airflow home
-            # /dags/ is the symbolic link created by git-sync
-            # /airflow/example_dags is git_subpath
-            # path_to_remove = os.path.join(
-            #     self.kube_config.git_sync_dest,
-            #     self.kube_config.git_subpath
-            # )
-            # dag_volume_mount_path = self.worker_airflow_dags[:-len(path_to_remove)]
-            # /usr/local/airflow/dags/repo
-            # dag_volume_mount_path = os.path.join(
-            #     self.worker_airflow_dags,
-            #     # self.kube_config.git_sync_dest,  # repo
-            #     # self.kube_config.git_subpath     # dags
-            # )
             dag_volume_mount_path = self.kube_config.git_dags_folder_mount_point
+
         dags_volume_mount = {
             'name': dags_volume_name,
             'mountPath': dag_volume_mount_path,
