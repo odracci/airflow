@@ -92,6 +92,15 @@ class WorkerConfiguration(LoggingMixin):
         if self.kube_config.airflow_configmap:
             env['AIRFLOW__CORE__AIRFLOW_HOME'] = self.worker_airflow_home
             env['AIRFLOW__CORE__DAGS_FOLDER'] = self.worker_airflow_dags
+        if not self.kube_config.dags_volume_claim:
+            # /usr/local/airflow/dags/repo/dags
+            dag_volume_mount_path = os.path.join(
+                self.kube_config.git_dags_folder_mount_point,
+                self.kube_config.git_sync_dest,  # repo
+                self.kube_config.git_subpath     # dags
+            )
+            env['AIRFLOW__CORE__DAGS_FOLDER'] = dag_volume_mount_path
+
         return env
 
     def _get_secrets(self):
@@ -149,11 +158,13 @@ class WorkerConfiguration(LoggingMixin):
             #     self.kube_config.git_subpath
             # )
             # dag_volume_mount_path = self.worker_airflow_dags[:-len(path_to_remove)]
-            dag_volume_mount_path = os.path.join(
-                self.worker_airflow_dags,
-                self.kube_config.git_sync_dest,
-                self.kube_config.git_subpath
-            )
+            # /usr/local/airflow/dags/repo
+            # dag_volume_mount_path = os.path.join(
+            #     self.worker_airflow_dags,
+            #     # self.kube_config.git_sync_dest,  # repo
+            #     # self.kube_config.git_subpath     # dags
+            # )
+            dag_volume_mount_path = self.kube_config.git_dags_folder_mount_point
         dags_volume_mount = {
             'name': dags_volume_name,
             'mountPath': dag_volume_mount_path,

@@ -141,6 +141,7 @@ class KubeConfig:
         self.git_sync_root = conf.get(self.kubernetes_section, 'git_sync_root')
         # Optionally,
         self.git_sync_dest = conf.get(self.kubernetes_section, 'git_sync_dest')
+        self.git_dags_folder_mount_point = conf.get(self.kubernetes_section, 'git_dags_folder_mount_point')
 
         # Optionally a user may supply a `git_user` and `git_password` for private
         # repositories
