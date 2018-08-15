@@ -17,8 +17,6 @@
 #  specific language governing permissions and limitations      *
 #  under the License.                                           *
 
-set -e
-
 IMAGE=${1:-airflow}
 TAG=${2:-latest}
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
@@ -28,6 +26,8 @@ ENVCONFIG=$(minikube docker-env)
 if [ $? -eq 0 ]; then
   eval $ENVCONFIG
 fi
+
+set -e
 
 echo "Airflow directory $AIRFLOW_ROOT"
 echo "Airflow Docker directory $DIRNAME"
