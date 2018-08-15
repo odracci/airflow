@@ -136,7 +136,8 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
                 )
 
     def test_worker_environment_no_dags_folder(self):
-        self.kube_config.airflow_configmap = 'airflow-configmap'
+        self.kube_config.airflow_configmap = ''
+        self.kube_config.git_dags_folder_mount_point = ''
         self.kube_config.dags_folder = ''
         worker_config = WorkerConfiguration(self.kube_config)
         env = worker_config._get_environment()
@@ -145,6 +146,7 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
 
     def test_worker_environment_when_dags_folder_specified(self):
         self.kube_config.airflow_configmap = 'airflow-configmap'
+        self.kube_config.git_dags_folder_mount_point = ''
         dags_folder = '/workers/path/to/dags'
         self.kube_config.dags_folder = dags_folder
 
