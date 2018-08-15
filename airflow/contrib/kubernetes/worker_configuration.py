@@ -93,7 +93,7 @@ class WorkerConfiguration(LoggingMixin):
             env['AIRFLOW__CORE__AIRFLOW_HOME'] = self.worker_airflow_home
             env['AIRFLOW__CORE__DAGS_FOLDER'] = self.worker_airflow_dags
         if self.kube_config.git_dags_folder_mount_point:
-            # /usr/local/airflow/dags/repo/dags
+            # /root/airflow/dags/repo/dags
             dag_volume_mount_path = os.path.join(
                 self.kube_config.git_dags_folder_mount_point,
                 self.kube_config.git_sync_dest,  # repo

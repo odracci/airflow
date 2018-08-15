@@ -136,15 +136,31 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
                 )
 
     def test_worker_environment_no_dags_folder(self):
-        self.kube_config.worker_dags_folder = ''
+        self.kube_config.airflow_configmap = 'airflow-configmap'
+        self.kube_config.dags_folder = ''
         worker_config = WorkerConfiguration(self.kube_config)
         env = worker_config._get_environment()
 
         self.assertNotIn('AIRFLOW__CORE__DAGS_FOLDER', env)
 
     def test_worker_environment_when_dags_folder_specified(self):
+        self.kube_config.airflow_configmap = 'airflow-configmap'
         dags_folder = '/workers/path/to/dags'
-        self.kube_config.worker_dags_folder = dags_folder
+        self.kube_config.dags_folder = dags_folder
+
+        worker_config = WorkerConfiguration(self.kube_config)
+        env = worker_config._get_environment()
+
+        self.assertEqual(dags_folder, env['AIRFLOW__CORE__DAGS_FOLDER'])
+
+    def test_worker_environment_dags_folder_using_git_sync(self):
+        self.kube_config.airflow_configmap = 'airflow-configmap'
+        self.kube_config.git_sync_dest = 'repo'
+        self.kube_config.git_subpath = 'dags'
+        self.kube_config.git_dags_folder_mount_point = '/workers/path/to/dags'
+
+        dags_folder = '{}/{}/{}'.format(self.kube_config.git_dags_folder_mount_point, self.kube_config.git_sync_dest,
+                                        self.kube_config.git_subpath)
 
         worker_config = WorkerConfiguration(self.kube_config)
         env = worker_config._get_environment()
