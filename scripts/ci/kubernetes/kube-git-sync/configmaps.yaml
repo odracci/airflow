@@ -22,7 +22,7 @@ data:
   airflow.cfg: |
     [core]
     airflow_home = /root/airflow
-    dags_folder = /root/airflow/dags/repo/airflow/example_dags
+    dags_folder = /root/airflow/dags/repo/airflow/example_dags_kubernetes
     base_log_folder = /root/airflow/logs
     logging_level = INFO
     executor = KubernetesExecutor
@@ -183,7 +183,7 @@ data:
     delete_worker_pods = True
     git_repo = https://github.com/apache/incubator-airflow.git
     git_branch = master
-    git_subpath = airflow/example_dags/
+    git_subpath = airflow/example_dags_kubernetes/
     git_user =
     git_password =
     git_sync_root = /git

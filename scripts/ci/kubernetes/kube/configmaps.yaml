@@ -183,7 +183,7 @@ data:
     delete_worker_pods = True
     git_repo = https://github.com/apache/incubator-airflow.git
     git_branch = master
-    git_subpath = airflow/example_dags/
+    git_subpath = airflow/example_dags_kubernetes/
     git_user =
     git_password =
     git_sync_root = /git

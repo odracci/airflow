@@ -198,6 +198,29 @@ class KubernetesExecutorTest(unittest.TestCase):
                                        dag_id=dag_id,
                                        expected_final_state='success', timeout=100)
 
+    def test_integration_run_dag_with_import(self):
+        host = get_minikube_host()
+        dag_id = 'example_kubernetes_import'
+
+        result_json = self.start_dag(dag_id=dag_id, host=host)
+
+        self.assertGreater(len(result_json['items']), 0)
+
+        execution_date = result_json['items'][0]['execution_date']
+        print("Found the job with execution date {}".format(execution_date))
+
+        # Wait 100 seconds for the operator to complete
+        self.monitor_task(host=host,
+                          execution_date=execution_date,
+                          dag_id=dag_id,
+                          task_id='start_task',
+                          expected_final_state='success', timeout=100)
+
+        self.ensure_dag_expected_state(host=host,
+                                       execution_date=execution_date,
+                                       dag_id=dag_id,
+                                       expected_final_state='success', timeout=100)
+
 
 if __name__ == '__main__':
     unittest.main()
