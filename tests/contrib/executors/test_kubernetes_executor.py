@@ -161,7 +161,8 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
         self.kube_config.git_subpath = 'dags'
         self.kube_config.git_dags_folder_mount_point = '/workers/path/to/dags'
 
-        dags_folder = '{}/{}/{}'.format(self.kube_config.git_dags_folder_mount_point, self.kube_config.git_sync_dest,
+        dags_folder = '{}/{}/{}'.format(self.kube_config.git_dags_folder_mount_point,
+                                        self.kube_config.git_sync_dest,
                                         self.kube_config.git_subpath)
 
         worker_config = WorkerConfiguration(self.kube_config)

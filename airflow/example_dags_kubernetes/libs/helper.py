@@ -32,4 +32,3 @@ def create_operator(dag):
 
 def print_stuff():
     print("annotated!")
-
