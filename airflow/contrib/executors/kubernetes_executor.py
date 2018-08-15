@@ -137,10 +137,12 @@ class KubeConfig:
         self.git_branch = conf.get(self.kubernetes_section, 'git_branch')
         # Optionally, the directory in the git repository containing the dags
         self.git_subpath = conf.get(self.kubernetes_section, 'git_subpath')
-        # Optionally,
+        # Optionally, the root directory for git operations
         self.git_sync_root = conf.get(self.kubernetes_section, 'git_sync_root')
-        # Optionally,
+        # Optionally, the name at which to publish the checked-out files under --root
         self.git_sync_dest = conf.get(self.kubernetes_section, 'git_sync_dest')
+        # Optionally, if git_dags_folder_mount_point is set the worker will use
+        # {git_dags_folder_mount_point}/{git_sync_dest}/{git_subpath} as dags_folder
         self.git_dags_folder_mount_point = conf.get(self.kubernetes_section, 'git_dags_folder_mount_point')
 
         # Optionally a user may supply a `git_user` and `git_password` for private
@@ -151,8 +153,6 @@ class KubeConfig:
         # NOTE: The user may optionally use a volume claim to mount a PV containing
         # DAGs directly
         self.dags_volume_claim = conf.get(self.kubernetes_section, 'dags_volume_claim')
-
-        self.logs_volume_host = conf.get(self.kubernetes_section, 'logs_volume_host')
 
         # This prop may optionally be set for PV Claims and is used to write logs
         self.logs_volume_claim = conf.get(self.kubernetes_section, 'logs_volume_claim')
@@ -167,9 +167,11 @@ class KubeConfig:
         self.logs_volume_subpath = conf.get(
             self.kubernetes_section, 'logs_volume_subpath')
 
-        # NOTE: The user may optionally use a volume claim to mount a PV containing
-        # DAGs directly
+        # Optionally, hostPath volume containing DAGs
         self.dags_volume_host = conf.get(self.kubernetes_section, 'dags_volume_host')
+
+        # Optionally, write logs to a hostPath Volume
+        self.logs_volume_host = conf.get(self.kubernetes_section, 'logs_volume_host')
 
         # This prop may optionally be set for PV Claims and is used to write logs
         self.base_log_folder = configuration.get(self.core_section, 'base_log_folder')
