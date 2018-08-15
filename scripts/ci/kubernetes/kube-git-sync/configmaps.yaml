@@ -22,7 +22,7 @@ data:
   airflow.cfg: |
     [core]
     airflow_home = /root/airflow
-    dags_folder = /root/airflow/dags
+    dags_folder = /root/airflow/dags/repo/airflow/example_dags
     base_log_folder = /root/airflow/logs
     logging_level = INFO
     executor = KubernetesExecutor
@@ -188,8 +188,8 @@ data:
     git_password =
     git_sync_root = /git
     git_sync_path = repo
-    git_dags_folder_mount_point =
-    dags_volume_claim = airflow-dags
+    git_dags_folder_mount_point = /root/airflow/dags
+    dags_volume_claim =
     dags_volume_subpath =
     logs_volume_claim = airflow-logs
     logs_volume_subpath =
