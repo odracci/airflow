@@ -69,7 +69,7 @@ spec:
         - name: GIT_SYNC_REPO
           value: https://github.com/odracci/incubator-airflow.git
         - name: GIT_SYNC_BRANCH
-          value: kubernetes-host-path
+          value: kubernetes-operator-fix
         - name: GIT_SYNC_ROOT
           value: /git
         - name: GIT_SYNC_DEST
