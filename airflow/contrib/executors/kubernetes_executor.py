@@ -115,8 +115,6 @@ class KubeConfig:
             self.kubernetes_section, 'worker_container_repository')
         self.worker_container_tag = configuration.get(
             self.kubernetes_section, 'worker_container_tag')
-        self.worker_dags_folder = configuration.get(
-            self.kubernetes_section, 'worker_dags_folder')
         self.kube_image = '{}:{}'.format(
             self.worker_container_repository, self.worker_container_tag)
         self.kube_image_pull_policy = configuration.get(
