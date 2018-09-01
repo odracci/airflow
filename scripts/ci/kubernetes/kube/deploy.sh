@@ -23,9 +23,14 @@ IMAGE=${1:-airflow/ci}
 TAG=${2:-latest}
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
 
+# Fix file permissions
+sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
+
 kubectl delete -f $DIRNAME/postgres.yaml
 kubectl delete -f $DIRNAME/airflow.yaml
 kubectl delete -f $DIRNAME/secrets.yaml
+
+set -e
 
 kubectl apply -f $DIRNAME/secrets.yaml
 kubectl apply -f $DIRNAME/configmaps.yaml
@@ -51,6 +56,8 @@ POD=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.na
 
 echo "------- pod description -------"
 kubectl describe pod $POD
+echo "------- webserver init container logs - init -------"
+kubectl logs $POD init
 echo "------- webserver logs -------"
 kubectl logs $POD webserver
 echo "------- scheduler logs -------"

@@ -180,8 +180,8 @@ data:
     worker_container_tag = latest
     worker_container_image_pull_policy = IfNotPresent
     delete_worker_pods = True
-    git_repo = https://github.com/odracci/incubator-airflow.git
-    git_branch = kubernetes-operator-fix
+    git_repo = https://github.com/{{TRAVIS_REPO_SLUG}}.git
+    git_branch = {{TRAVIS_BRANCH}}
     git_subpath = airflow/example_dags_kubernetes/
     git_user =
     git_password =
