@@ -21,15 +21,18 @@ IMAGE=${1:-airflow/ci}
 TAG=${2:-latest}
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
 
+export TRAVIS_BRANCH=${TRAVIS_BRANCH}
+export TRAVIS_REPO_SLUG=${TRAVIS_REPO_SLUG}
+
 kubectl delete -f $DIRNAME/postgres.yaml
 kubectl delete -f $DIRNAME/airflow.yaml
 kubectl delete -f $DIRNAME/secrets.yaml
 
 kubectl apply -f $DIRNAME/secrets.yaml
-kubectl apply -f $DIRNAME/configmaps.yaml
+kubectl apply -f $DIRNAME/configmaps.yaml --dry-run -o yaml | envsubst | kubectl apply -f -
 kubectl apply -f $DIRNAME/postgres.yaml
 kubectl apply -f $DIRNAME/volumes.yaml
-kubectl apply -f $DIRNAME/airflow.yaml
+kubectl apply -f $DIRNAME/airflow.yaml --dry-run -o yaml | envsubst | kubectl apply -f -
 
 # wait for up to 10 minutes for everything to be deployed
 for i in {1..150}
