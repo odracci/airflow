@@ -67,9 +67,9 @@ spec:
       - name: git-sync-clone
         env:
         - name: GIT_SYNC_REPO
-          value: https://github.com/odracci/incubator-airflow.git
+          value: https://github.com/{{TRAVIS_REPO_SLUG}}.git
         - name: GIT_SYNC_BRANCH
-          value: kubernetes-operator-fix
+          value: {{TRAVIS_BRANCH}}
         - name: GIT_SYNC_ROOT
           value: /git
         - name: GIT_SYNC_DEST

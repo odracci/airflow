@@ -17,19 +17,29 @@
 #  specific language governing permissions and limitations      *
 #  under the License.                                           *
 
+set -x
+
 IMAGE=${1:-airflow/ci}
 TAG=${2:-latest}
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
 
+# Fix file permissions
+sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
+
+configmap_template=`cat "$DIRNAME/configmaps.template.yaml" | sed "s|{{TRAVIS_BRANCH}}|$TRAVIS_BRANCH|g" | sed "s|{{TRAVIS_REPO_SLUG}}|$TRAVIS_REPO_SLUG|g"`
+airflow_template=`cat "$DIRNAME/airflow.template.yaml" | sed "s|{{TRAVIS_BRANCH}}|$TRAVIS_BRANCH|g" | sed "s|{{TRAVIS_REPO_SLUG}}|$TRAVIS_REPO_SLUG|g"`
+
 kubectl delete -f $DIRNAME/postgres.yaml
-kubectl delete -f $DIRNAME/airflow.yaml
+echo "$airflow_template" kubectl delete -f -
 kubectl delete -f $DIRNAME/secrets.yaml
 
+set -e
+
 kubectl apply -f $DIRNAME/secrets.yaml
-kubectl apply -f $DIRNAME/configmaps.yaml
+echo "$configmap_template" | kubectl apply -f -
 kubectl apply -f $DIRNAME/postgres.yaml
 kubectl apply -f $DIRNAME/volumes.yaml
-kubectl apply -f $DIRNAME/airflow.yaml
+echo "$airflow_template" | kubectl apply -f -
 
 # wait for up to 10 minutes for everything to be deployed
 for i in {1..150}
@@ -49,6 +59,10 @@ POD=$(kubectl get pods -o go-template --template '{{range .items}}{{.metadata.na
 
 echo "------- pod description -------"
 kubectl describe pod $POD
+echo "------- webserver init container logs - init -------"
+kubectl logs $POD init
+echo "------- webserver init container logs - git-sync-clone -------"
+kubectl logs $POD git-sync-clone
 echo "------- webserver logs -------"
 kubectl logs $POD webserver
 echo "------- scheduler logs -------"
