@@ -25,11 +25,5 @@ DIRNAME=$(cd "$(dirname "$0")"; pwd)
 
 $DIRNAME/minikube/start_minikube.sh
 $DIRNAME/docker/build.sh
-if [ "${GIT_SYNC:-0}" = 0 ];
-then
-    $DIRNAME/kube/deploy.sh
-else
-    $DIRNAME/kube-git-sync/deploy.sh
-fi
 
 echo "Airflow environment on kubernetes is good to go!"
