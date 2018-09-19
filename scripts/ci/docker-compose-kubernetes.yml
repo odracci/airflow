@@ -16,54 +16,10 @@
 
 version: "2.2"
 services:
-  mysql:
-    image: mysql:5.6
-    restart: always
-    environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=true
-      - MYSQL_ROOT_HOST=%
-    volumes:
-      - ./mysql/conf.d:/etc/mysql/conf.d
-
-  postgres:
-    image: postgres:9.6
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=airflow
-      - POSTGRES_DB=airflow
-
-  mongo:
-    image: mongo:3
-    restart: always
-
-  cassandra:
-    image: cassandra:3.0
-    restart: always
-
-  rabbitmq:
-    image: rabbitmq:3.7
-    restart: always
-
-  openldap:
-    image: osixia/openldap:1.2.0
-    restart: always
-    command: --copy-service
-    environment:
-      - LDAP_DOMAIN=example.com
-      - LDAP_ADMIN_PASSWORD=insecure
-      - LDAP_CONFIG_PASSWORD=insecure
-    volumes:
-      - ./openldap/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom
-
-  krb5-kdc-server:
-    image: godatadriven/krb5-kdc-server
-    hostname: krb5-kdc-server
-    domainname: example.com
-
   airflow-testing:
     image: airflowci/incubator-airflow-ci:latest
     init: true
+    network_mode: host
     environment:
       - USER=airflow
       - SLUGIFY_USES_TEXT_UNIDECODE=yes
@@ -82,16 +38,12 @@ services:
       - TRAVIS_REPO_SLUG
       - TRAVIS_OS_NAME
       - TRAVIS_TAG
-    depends_on:
-      - postgres
-      - mysql
-      - mongo
-      - cassandra
-      - rabbitmq
-      - openldap
-      - krb5-kdc-server
     volumes:
       - ../../:/app
       - ~/.cache/pip:/home/airflow/.cache/pip
       - ~/.wheelhouse/:/home/airflow/.wheelhouse/
+      - /usr/local/bin/kubectl:/usr/local/bin/kubectl
+      - /usr/local/bin/minikube:/usr/local/bin/minikube
+      - ~/.kube:/home/airflow/.kube
+      - ~/.minikube:/home/airflow/.minikube
     working_dir: /app
