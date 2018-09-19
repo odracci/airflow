@@ -25,13 +25,13 @@ env:
     - SLUGIFY_USES_TEXT_UNIDECODE=yes
     - TRAVIS_CACHE=$HOME/.travis_cache/
   matrix:
-    - TOX_ENV=flake8
-    - TOX_ENV=py27-backend_mysql-env_docker
-    - TOX_ENV=py27-backend_sqlite-env_docker
-    - TOX_ENV=py27-backend_postgres-env_docker
-    - TOX_ENV=py35-backend_mysql-env_docker PYTHON_VERSION=3
-    - TOX_ENV=py35-backend_sqlite-env_docker PYTHON_VERSION=3
-    - TOX_ENV=py35-backend_postgres-env_docker PYTHON_VERSION=3
+#    - TOX_ENV=flake8
+#    - TOX_ENV=py27-backend_mysql-env_docker
+#    - TOX_ENV=py27-backend_sqlite-env_docker
+#    - TOX_ENV=py27-backend_postgres-env_docker
+#    - TOX_ENV=py35-backend_mysql-env_docker PYTHON_VERSION=3
+#    - TOX_ENV=py35-backend_sqlite-env_docker PYTHON_VERSION=3
+#    - TOX_ENV=py35-backend_postgres-env_docker PYTHON_VERSION=3
     - TOX_ENV=py27-backend_postgres-env_kubernetes KUBERNETES_VERSION=v1.9.0
     - TOX_ENV=py35-backend_postgres-env_kubernetes KUBERNETES_VERSION=v1.10.0 PYTHON_VERSION=3
 
@@ -39,12 +39,12 @@ cache:
   directories:
     - $HOME/.wheelhouse/
     - $HOME/.cache/pip
-    - /root/.cache/pip
     - $HOME/.travis_cache/
 before_install:
   - sudo ls -lh $HOME/.cache/pip/
-  - sudo rm -rf $HOME/.cache/pip/* $HOME/.wheelhouse/*
-  - sudo chown -R travis:travis $HOME/.cache/pip
+  - sudo ls -lh $HOME/.wheelhouse
+  - sudo ls -lh $HOME/.travis_cache
+  - sudo chown -R travis:travis $HOME/.cache/pip $HOME/.wheelhouse/
   # Required for K8s v1.10.x. See
   # https://github.com/kubernetes/kubernetes/issues/61058#issuecomment-372764783
   - if [ ! -z "$KUBERNETES_VERSION" ]; then sudo mount --make-shared / && sudo service docker restart; fi
@@ -62,3 +62,8 @@ script:
       ./scripts/ci/kubernetes/kube/deploy.sh &&
       MINIKUBE_IP=$(minikube ip) docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml -f scripts/ci/docker-compose-kubernetes.yml run airflow-testing /app/scripts/ci/run-ci.sh;
     fi
+before_cache:
+  - sudo ls -lh $HOME/.cache/pip/
+  - sudo ls -lh $HOME/.wheelhouse
+  - sudo ls -lh $HOME/.travis_cache
+  - sudo chown -R travis:travis $HOME/.cache/pip $HOME/.wheelhouse/
