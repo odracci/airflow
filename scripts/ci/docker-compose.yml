@@ -68,8 +68,6 @@ services:
       - USER=airflow
       - SLUGIFY_USES_TEXT_UNIDECODE=yes
       - TOX_ENV
-      - KUBERNETES_VERSION
-      - MINIKUBE_IP
       - PYTHON_VERSION
       - CI
       - TRAVIS
