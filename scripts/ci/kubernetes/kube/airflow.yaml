@@ -148,23 +148,6 @@ spec:
   type: NodePort
   ports:
     - port: 8080
-      nodePort: 30808
+      nodePort: 30809
   selector:
     name: airflow
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: airflow-published
-spec:
-  ports:
-  - name: 8080-tcp
-    nodePort: 30809
-    port: 8080
-    protocol: TCP
-    targetPort: 8080
-  selector:
-    name: airflow
-  sessionAffinity: None
-  type: LoadBalancer
