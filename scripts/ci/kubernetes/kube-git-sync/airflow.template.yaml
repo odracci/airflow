@@ -171,4 +171,3 @@ spec:
       nodePort: 30809
   selector:
     name: airflow
-
