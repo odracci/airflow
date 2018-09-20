@@ -25,13 +25,13 @@ env:
     - SLUGIFY_USES_TEXT_UNIDECODE=yes
     - TRAVIS_CACHE=$HOME/.travis_cache/
   matrix:
-    - TOX_ENV=flake8
-    - TOX_ENV=py27-backend_mysql-env_docker
-    - TOX_ENV=py27-backend_sqlite-env_docker
-    - TOX_ENV=py27-backend_postgres-env_docker
-    - TOX_ENV=py35-backend_mysql-env_docker PYTHON_VERSION=3
-    - TOX_ENV=py35-backend_sqlite-env_docker PYTHON_VERSION=3
-    - TOX_ENV=py35-backend_postgres-env_docker PYTHON_VERSION=3
+#    - TOX_ENV=flake8
+#    - TOX_ENV=py27-backend_mysql-env_docker
+#    - TOX_ENV=py27-backend_sqlite-env_docker
+#    - TOX_ENV=py27-backend_postgres-env_docker
+#    - TOX_ENV=py35-backend_mysql-env_docker PYTHON_VERSION=3
+#    - TOX_ENV=py35-backend_sqlite-env_docker PYTHON_VERSION=3
+#    - TOX_ENV=py35-backend_postgres-env_docker PYTHON_VERSION=3
     - TOX_ENV=py27-backend_postgres-env_kubernetes KUBERNETES_VERSION=v1.9.0
     - TOX_ENV=py35-backend_postgres-env_kubernetes KUBERNETES_VERSION=v1.10.0 PYTHON_VERSION=3
 
@@ -51,12 +51,19 @@ install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - pip install --upgrade pip
-  - if [ ! -z "$KUBERNETES_VERSION" ]; then ./scripts/ci/kubernetes/setup_kubernetes.sh; fi
 script:
   - if [ -z "$KUBERNETES_VERSION" ]; then docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml run airflow-testing /app/scripts/ci/run-ci.sh; fi
+#  - if [ ! -z "$KUBERNETES_VERSION" ]; then
+#      ./scripts/ci/kubernetes/setup_kubernetes.sh &&
+#      ./scripts/ci/kubernetes/kube/deploy.sh &&
+#      MINIKUBE_IP=$(minikube ip) docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml -f scripts/ci/docker-compose-kubernetes.yml run airflow-testing /app/scripts/ci/run-ci.sh &&
+#      ./scripts/ci/kubernetes/minikube/stop_minikube.sh;
+#    fi
   - if [ ! -z "$KUBERNETES_VERSION" ]; then
-      ./scripts/ci/kubernetes/kube/deploy.sh &&
-      MINIKUBE_IP=$(minikube ip) docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml -f scripts/ci/docker-compose-kubernetes.yml run airflow-testing /app/scripts/ci/run-ci.sh;
+      ./scripts/ci/kubernetes/setup_kubernetes.sh &&
+      ./scripts/ci/kubernetes/kube-git-sync/deploy.sh &&
+      MINIKUBE_IP=$(minikube ip) docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml -f scripts/ci/docker-compose-kubernetes.yml run airflow-testing /app/scripts/ci/run-ci.sh &&
+      ./scripts/ci/kubernetes/minikube/stop_minikube.sh;
     fi
 before_cache:
   - sudo chown -R travis:travis $HOME/.cache/pip $HOME/.wheelhouse/

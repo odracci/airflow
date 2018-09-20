@@ -67,9 +67,9 @@ spec:
       - name: git-sync-clone
         env:
         - name: GIT_SYNC_REPO
-          value: https://${TRAVIS_REPO_SLUG}/incubator-airflow.git
+          value: https://{{TRAVIS_REPO_SLUG}}/incubator-airflow.git
         - name: GIT_SYNC_BRANCH
-          value: ${TRAVIS_BRANCH}
+          value: {{TRAVIS_BRANCH}}
         - name: GIT_SYNC_ROOT
           value: /git
         - name: GIT_SYNC_DEST
@@ -171,4 +171,3 @@ spec:
       nodePort: 30809
   selector:
     name: airflow
-
