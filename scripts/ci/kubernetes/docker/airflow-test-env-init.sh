@@ -17,6 +17,8 @@
 #  specific language governing permissions and limitations      *
 #  under the License.
 
+set -x
+
 cd /usr/local/lib/python2.7/dist-packages/airflow && \
 cp -R example_dags_kubernetes/* /root/airflow/dags/ && \
 airflow initdb && \
