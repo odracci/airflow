@@ -18,6 +18,7 @@
 
 import os
 import unittest
+from json import JSONDecodeError
 from subprocess import check_call, check_output
 import requests.exceptions
 import requests
@@ -142,8 +143,13 @@ class KubernetesExecutorTest(unittest.TestCase):
             'dags/{dag_id}/dag_runs'.format(host=host, dag_id=dag_id),
             json={}
         )
+        try:
+            json = result.json()
+        except JSONDecodeError:
+            json = result.text()
+
         self.assertEqual(result.status_code, 200, "Could not trigger a DAG-run: {result}"
-                         .format(result=result.json()))
+                         .format(result=json))
 
         time.sleep(1)
 
