@@ -36,10 +36,10 @@ kubectl delete -f $DIRNAME/secrets.yaml
 set -e
 
 kubectl apply -f $DIRNAME/secrets.yaml
-echo "$configmap_template" kubectl apply -f -
+echo "$configmap_template" | kubectl apply -f -
 kubectl apply -f $DIRNAME/postgres.yaml
 kubectl apply -f $DIRNAME/volumes.yaml
-echo "$airflow_template" kubectl apply -f -
+echo "$airflow_template" | kubectl apply -f -
 
 kubectl get configmap airflow-configmap -o yaml
 kubectl get secret airflow-secrets -o yaml
