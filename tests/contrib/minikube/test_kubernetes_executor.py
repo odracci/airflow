@@ -144,12 +144,12 @@ class KubernetesExecutorTest(unittest.TestCase):
             json={}
         )
         try:
-            json = result.json()
+            json_result = result.json()
         except JSONDecodeError:
-            json = result.text()
+            json_result = result.text()
 
         self.assertEqual(result.status_code, 200, "Could not trigger a DAG-run: {result}"
-                         .format(result=json))
+                         .format(result=json_result))
 
         time.sleep(1)
 
