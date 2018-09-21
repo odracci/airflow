@@ -22,21 +22,62 @@ set -x
 IMAGE=${1:-airflow/ci}
 TAG=${2:-latest}
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
+TEMPLATE_DIRNAME=${DIRNAME}/templates
+BUILD_DIRNAME=${DIRNAME}/build
+
+GIT_SYNC=$1
+
+if [ ! -d "$BUILD_DIRNAME" ]; then
+  mkdir -p ${BUILD_DIRNAME}
+fi
+
+if [ "${GIT_SYNC}" = 0 ]; then
+    INIT_DAGS_VOLUME_NAME=airflow-dags
+    CONFIGMAP_DAGS_FOLDER=/root/airflow/dags
+    CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT=
+    CONFIGMAP_DAGS_VOLUME_CLAIM=airflow-dags
+else
+    INIT_DAGS_VOLUME_NAME=airflow-dags-fake
+    CONFIGMAP_DAGS_FOLDER=/root/airflow/dags/repo/airflow/example_dags_kubernetes
+    CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT=/root/airflow/dags
+    CONFIGMAP_DAGS_VOLUME_CLAIM=
+fi
+CONFIGMAP_GIT_REPO=${TRAVIS_REPO_SLUG:-apache/incubator-airflow}
+CONFIGMAP_BRANCH=${TRAVIS_BRANCH:-master}
+
+if [ "${GIT_SYNC}" = 0 ]; then
+  sed -e "s/{{INIT_GIT_SYNC}}//g" \
+      ${TEMPLATE_DIRNAME}/airflow.template.yaml > ${BUILD_DIRNAME}/airflow.yaml
+else
+  sed -e "/{{INIT_GIT_SYNC}}/{r $TEMPLATE_DIRNAME/init_git_sync.template.yaml" -e 'd}' \
+      ${TEMPLATE_DIRNAME}/airflow.template.yaml > ${BUILD_DIRNAME}/airflow.yaml
+fi
+
+sed -i "s|{{CONFIGMAP_GIT_REPO}}|$CONFIGMAP_GIT_REPO|g" ${BUILD_DIRNAME}/airflow.yaml
+sed -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/airflow.yaml
+sed -i "s|{{INIT_DAGS_VOLUME_NAME}}|$INIT_DAGS_VOLUME_NAME|g" ${BUILD_DIRNAME}/airflow.yaml
+
+sed "s|{{CONFIGMAP_DAGS_FOLDER}}|$CONFIGMAP_DAGS_FOLDER|g" \
+    ${TEMPLATE_DIRNAME}/configmaps.template.yaml > ${BUILD_DIRNAME}/configmaps.yaml
+sed -i "s|{{CONFIGMAP_GIT_REPO}}|$CONFIGMAP_GIT_REPO|g" ${BUILD_DIRNAME}/configmaps.yaml
+sed -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/configmaps.yaml
+sed -i "s|{{CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT}}|$CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT|g" ${BUILD_DIRNAME}/configmaps.yaml
+sed -i "s|{{CONFIGMAP_DAGS_VOLUME_CLAIM}}|$CONFIGMAP_DAGS_VOLUME_CLAIM|g" ${BUILD_DIRNAME}/configmaps.yaml
 
 # Fix file permissions
 sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
 
 kubectl delete -f $DIRNAME/postgres.yaml
-kubectl delete -f $DIRNAME/airflow.yaml
+kubectl delete -f $BUILD_DIRNAME/airflow.yaml
 kubectl delete -f $DIRNAME/secrets.yaml
 
 set -e
 
 kubectl apply -f $DIRNAME/secrets.yaml
-kubectl apply -f $DIRNAME/configmaps.yaml
+kubectl apply -f $BUILD_DIRNAME/configmaps.yaml
 kubectl apply -f $DIRNAME/postgres.yaml
 kubectl apply -f $DIRNAME/volumes.yaml
-kubectl apply -f $DIRNAME/airflow.yaml
+kubectl apply -f $BUILD_DIRNAME/airflow.yaml
 
 # wait for up to 10 minutes for everything to be deployed
 for i in {1..150}
@@ -58,6 +99,10 @@ echo "------- pod description -------"
 kubectl describe pod $POD
 echo "------- webserver init container logs - init -------"
 kubectl logs $POD init
+if [ "${GIT_SYNC}" = 1 ]; then
+    echo "------- webserver init container logs - git-sync-clone -------"
+    kubectl logs $POD git-sync-clone
+fi
 echo "------- webserver logs -------"
 kubectl logs $POD webserver
 echo "------- scheduler logs -------"

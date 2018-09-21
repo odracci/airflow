@@ -22,7 +22,7 @@ data:
   airflow.cfg: |
     [core]
     airflow_home = /root/airflow
-    dags_folder = /root/airflow/dags
+    dags_folder = {{CONFIGMAP_DAGS_FOLDER}}
     base_log_folder = /root/airflow/logs
     logging_level = INFO
     executor = KubernetesExecutor
@@ -56,6 +56,9 @@ data:
     statsd_host = localhost
     statsd_port = 8125
     statsd_prefix = airflow
+
+    # How many seconds to wait between file-parsing loops to prevent the logs from being spammed.
+    min_file_parsing_loop_time = 1
 
     print_stats_interval = 30
     scheduler_zombie_task_threshold = 300
@@ -177,15 +180,15 @@ data:
     worker_container_tag = latest
     worker_container_image_pull_policy = IfNotPresent
     delete_worker_pods = True
-    git_repo = https://github.com/apache/incubator-airflow.git
-    git_branch = master
+    git_repo = {{CONFIGMAP_GIT_REPO}}
+    git_branch = {{CONFIGMAP_BRANCH}}
     git_subpath = airflow/example_dags_kubernetes/
     git_user =
     git_password =
     git_sync_root = /git
     git_sync_path = repo
-    git_dags_folder_mount_point =
-    dags_volume_claim = airflow-dags
+    git_dags_folder_mount_point = {{CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT}}
+    dags_volume_claim = {{CONFIGMAP_DAGS_VOLUME_CLAIM}}
     dags_volume_subpath =
     logs_volume_claim = airflow-logs
     logs_volume_subpath =

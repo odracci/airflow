@@ -49,7 +49,7 @@ spec:
         - name: airflow-configmap
           mountPath: /root/airflow/airflow.cfg
           subPath: airflow.cfg
-        - name: airflow-dags
+        - name: {{INIT_DAGS_VOLUME_NAME}}
           mountPath: /root/airflow/dags
         - name: test-volume
           mountPath: /root/test_volume
@@ -64,6 +64,7 @@ spec:
         args:
           - "-cx"
           - "./tmp/airflow-test-env-init.sh"
+{{INIT_GIT_SYNC}}
       containers:
       - name: webserver
         image: airflow
@@ -90,20 +91,6 @@ spec:
           mountPath: /root/airflow/dags
         - name: airflow-logs
           mountPath: /root/airflow/logs
-#        readinessProbe:
-#          initialDelaySeconds: 5
-#          timeoutSeconds: 5
-#          periodSeconds: 5
-#          httpGet:
-#            path: /login
-#            port: 8080
-#        livenessProbe:
-#          initialDelaySeconds: 5
-#          timeoutSeconds: 5
-#          failureThreshold: 5
-#          httpGet:
-#            path: /login
-#            port: 8080
       - name: scheduler
         image: airflow
         imagePullPolicy: IfNotPresent
@@ -130,6 +117,8 @@ spec:
       - name: airflow-dags
         persistentVolumeClaim:
           claimName: airflow-dags
+      - name: airflow-dags-fake
+        emptyDir: {}
       - name: test-volume
         persistentVolumeClaim:
           claimName: test-volume
