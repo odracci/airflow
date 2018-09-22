@@ -105,6 +105,8 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
         self.kube_config.airflow_dags = 'logs'
         self.kube_config.dags_volume_subpath = None
         self.kube_config.logs_volume_subpath = None
+        self.kube_config.dags_folder = None
+        self.kube_config.git_dags_folder_mount_point = None
 
     def test_worker_configuration_no_subpaths(self):
         worker_config = WorkerConfiguration(self.kube_config)
@@ -137,24 +139,24 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
                     "subPath should've been passed to volumeMount configuration"
                 )
 
-    def test_worker_generate_dag_volume_mount_path_with_claim(self):
-        self.worker_airflow_dags = '/root/airflow/dags'
+    def test_worker_generate_dag_volume_mount_path(self):
         self.kube_config.git_dags_folder_mount_point = '/root/airflow/git/dags'
+        self.kube_config.dags_folder = '/root/airflow/dags'
         worker_config = WorkerConfiguration(self.kube_config)
 
-        dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
         self.kube_config.dags_volume_claim = 'airflow-dags'
         self.kube_config.dags_volume_host = ''
-        self.assertEqual(dag_volume_mount_path, self.worker_airflow_dags)
-
         dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
+        self.assertEqual(dag_volume_mount_path, self.kube_config.dags_folder)
+
         self.kube_config.dags_volume_claim = ''
         self.kube_config.dags_volume_host = '/host/airflow/dags'
-        self.assertEqual(dag_volume_mount_path, self.worker_airflow_dags)
-
         dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
+        self.assertEqual(dag_volume_mount_path, self.kube_config.dags_folder)
+
         self.kube_config.dags_volume_claim = ''
         self.kube_config.dags_volume_host = ''
+        dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
         self.assertEqual(dag_volume_mount_path,
                          self.kube_config.git_dags_folder_mount_point)
 
