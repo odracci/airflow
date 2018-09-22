@@ -55,13 +55,13 @@ script:
   - if [ -z "$KUBERNETES_VERSION" ]; then docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml run airflow-testing /app/scripts/ci/run-ci.sh; fi
   - if [ ! -z "$KUBERNETES_VERSION" ]; then
       ./scripts/ci/kubernetes/setup_kubernetes.sh &&
-      ./scripts/ci/kubernetes/kube/deploy.sh 0 &&
+      ./scripts/ci/kubernetes/kube/deploy.sh -d persistent &&
       MINIKUBE_IP=$(minikube ip) docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml -f scripts/ci/docker-compose-kubernetes.yml run airflow-testing /app/scripts/ci/run-ci.sh &&
       ./scripts/ci/kubernetes/minikube/stop_minikube.sh;
     fi
   - if [ ! -z "$KUBERNETES_VERSION" ]; then
       ./scripts/ci/kubernetes/setup_kubernetes.sh &&
-      ./scripts/ci/kubernetes/kube/deploy.sh 1 &&
+      ./scripts/ci/kubernetes/kube/deploy.sh -d git &&
       MINIKUBE_IP=$(minikube ip) docker-compose --log-level ERROR -f scripts/ci/docker-compose.yml -f scripts/ci/docker-compose-kubernetes.yml run airflow-testing /app/scripts/ci/run-ci.sh &&
       ./scripts/ci/kubernetes/minikube/stop_minikube.sh;
     fi

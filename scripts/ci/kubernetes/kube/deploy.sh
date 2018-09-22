@@ -25,7 +25,40 @@ DIRNAME=$(cd "$(dirname "$0")"; pwd)
 TEMPLATE_DIRNAME=${DIRNAME}/templates
 BUILD_DIRNAME=${DIRNAME}/build
 
-GIT_SYNC=$1
+usage() {
+    cat << EOF
+  usage: $0 options
+  OPTIONS:
+    -d Use PersistentVolume or GitSync for dags_folder. Available options are "persistent" or "git"
+EOF
+    exit 1;
+}
+
+while getopts ":d:" OPTION; do
+  case ${OPTION} in
+    d)
+      DAGS_VOLUME=${OPTARG};;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      exit 1
+      ;;
+    :)
+      echo "Option -$OPTARG requires an argument." >&2
+      usage
+      ;;
+  esac
+done
+
+case ${DAGS_VOLUME} in
+  "persistent")
+    GIT_SYNC=0 ;;
+  "git")
+    GIT_SYNC=1 ;;
+  *)
+    echo "Value \"$DAGS_VOLUME\" for dags_folder is not valid." >&2
+    usage
+    ;;
+esac
 
 if [ ! -d "$BUILD_DIRNAME" ]; then
   mkdir -p ${BUILD_DIRNAME}
