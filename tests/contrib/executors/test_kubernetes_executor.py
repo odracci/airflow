@@ -109,7 +109,9 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
     def test_worker_configuration_no_subpaths(self):
         worker_config = WorkerConfiguration(self.kube_config)
         volumes, volume_mounts = worker_config.init_volumes_and_mounts()
-        for volume_or_mount in [value for value in volumes.values()] + [value for value in volume_mounts.values()]:
+        volumes_list = [value for value in volumes.values()]
+        volume_mounts_list = [value for value in volume_mounts.values()]
+        for volume_or_mount in volumes_list + volume_mounts_list:
             if volume_or_mount['name'] != 'airflow-config':
                 self.assertNotIn(
                     'subPath', volume_or_mount,
@@ -153,7 +155,8 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
         dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
         self.kube_config.dags_volume_claim = ''
         self.kube_config.dags_volume_host = ''
-        self.assertEqual(dag_volume_mount_path, self.kube_config.git_dags_folder_mount_point)
+        self.assertEqual(dag_volume_mount_path,
+                         self.kube_config.git_dags_folder_mount_point)
 
     def test_worker_environment_no_dags_folder(self):
         self.kube_config.airflow_configmap = ''

@@ -78,7 +78,8 @@ class WorkerConfiguration(LoggingMixin):
             })
 
         if self.dags_volume_name not in volume_mounts:
-            raise AirflowException("GitSync enabled but volume %s is not defined." % self.dags_volume_name)
+            raise AirflowException(
+                "GitSync enabled but volume %s is not defined." % self.dags_volume_name)
 
         volume_mounts[self.dags_volume_name]['mountPath'] = self.kube_config.git_sync_root
         volume_mounts[self.dags_volume_name]['readOnly'] = False
@@ -172,10 +173,12 @@ class WorkerConfiguration(LoggingMixin):
         }
 
         if self.kube_config.dags_volume_subpath:
-            volume_mounts[self.dags_volume_name]['subPath'] = self.kube_config.dags_volume_subpath
+            volume_mounts[self.dags_volume_name][
+                'subPath'] = self.kube_config.dags_volume_subpath
 
         if self.kube_config.logs_volume_subpath:
-            volume_mounts[self.logs_volume_name]['subPath'] = self.kube_config.logs_volume_subpath
+            volume_mounts[self.logs_volume_name][
+                'subPath'] = self.kube_config.logs_volume_subpath
 
         # Mount the airflow.cfg file via a configmap the user has specified
         if self.kube_config.airflow_configmap:
