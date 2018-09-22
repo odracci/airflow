@@ -109,7 +109,7 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
     def test_worker_configuration_no_subpaths(self):
         worker_config = WorkerConfiguration(self.kube_config)
         volumes, volume_mounts = worker_config.init_volumes_and_mounts()
-        for volume_or_mount in volumes + volume_mounts:
+        for volume_or_mount in [value for value in volumes.values()] + [value for value in volume_mounts.values()]:
             if volume_or_mount['name'] != 'airflow-config':
                 self.assertNotIn(
                     'subPath', volume_or_mount,
@@ -122,18 +122,38 @@ class TestKubernetesWorkerConfiguration(unittest.TestCase):
         worker_config = WorkerConfiguration(self.kube_config)
         volumes, volume_mounts = worker_config.init_volumes_and_mounts()
 
-        for volume in volumes:
+        for volume in [value for value in volumes.values()]:
             self.assertNotIn(
                 'subPath', volume,
                 "subPath isn't valid configuration for a volume"
             )
 
-        for volume_mount in volume_mounts:
+        for volume_mount in [value for value in volume_mounts.values()]:
             if volume_mount['name'] != 'airflow-config':
                 self.assertIn(
                     'subPath', volume_mount,
                     "subPath should've been passed to volumeMount configuration"
                 )
+
+    def test_worker_generate_dag_volume_mount_path_with_claim(self):
+        self.worker_airflow_dags = '/root/airflow/dags'
+        self.kube_config.git_dags_folder_mount_point = '/root/airflow/git/dags'
+        worker_config = WorkerConfiguration(self.kube_config)
+
+        dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
+        self.kube_config.dags_volume_claim = 'airflow-dags'
+        self.kube_config.dags_volume_host = ''
+        self.assertEqual(dag_volume_mount_path, self.worker_airflow_dags)
+
+        dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
+        self.kube_config.dags_volume_claim = ''
+        self.kube_config.dags_volume_host = '/host/airflow/dags'
+        self.assertEqual(dag_volume_mount_path, self.worker_airflow_dags)
+
+        dag_volume_mount_path = worker_config.generate_dag_volume_mount_path()
+        self.kube_config.dags_volume_claim = ''
+        self.kube_config.dags_volume_host = ''
+        self.assertEqual(dag_volume_mount_path, self.kube_config.git_dags_folder_mount_point)
 
     def test_worker_environment_no_dags_folder(self):
         self.kube_config.airflow_configmap = ''
