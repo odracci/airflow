@@ -16,4 +16,4 @@
           runAsUser: 0
         volumeMounts:
         - mountPath: /git
-          name: airflow-dags
+          name: airflow-dags-git

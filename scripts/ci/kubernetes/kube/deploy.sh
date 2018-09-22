@@ -51,9 +51,11 @@ done
 
 case ${DAGS_VOLUME} in
   "persistent")
-    GIT_SYNC=0 ;;
+    GIT_SYNC=0
+    ;;
   "git")
-    GIT_SYNC=1 ;;
+    GIT_SYNC=1
+    ;;
   *)
     echo "Value \"$DAGS_VOLUME\" for dags_folder is not valid." >&2
     usage
@@ -64,13 +66,17 @@ if [ ! -d "$BUILD_DIRNAME" ]; then
   mkdir -p ${BUILD_DIRNAME}
 fi
 
+rm -f ${BUILD_DIRNAME}/*
+
 if [ "${GIT_SYNC}" = 0 ]; then
     INIT_DAGS_VOLUME_NAME=airflow-dags
+    POD_AIRFLOW_DAGS_VOLUME_NAME=airflow-dags
     CONFIGMAP_DAGS_FOLDER=/root/airflow/dags
     CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT=
     CONFIGMAP_DAGS_VOLUME_CLAIM=airflow-dags
 else
     INIT_DAGS_VOLUME_NAME=airflow-dags-fake
+    POD_AIRFLOW_DAGS_VOLUME_NAME=airflow-dags-git
     CONFIGMAP_DAGS_FOLDER=/root/airflow/dags/repo/airflow/example_dags_kubernetes
     CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT=/root/airflow/dags
     CONFIGMAP_DAGS_VOLUME_CLAIM=
@@ -78,24 +84,26 @@ fi
 CONFIGMAP_GIT_REPO=${TRAVIS_REPO_SLUG:-apache/incubator-airflow}
 CONFIGMAP_BRANCH=${TRAVIS_BRANCH:-master}
 
+SED_COMMAND=sed
 if [ "${GIT_SYNC}" = 0 ]; then
-  sed -e "s/{{INIT_GIT_SYNC}}//g" \
+  ${SED_COMMAND} -e "s/{{INIT_GIT_SYNC}}//g" \
       ${TEMPLATE_DIRNAME}/airflow.template.yaml > ${BUILD_DIRNAME}/airflow.yaml
 else
-  sed -e "/{{INIT_GIT_SYNC}}/{r $TEMPLATE_DIRNAME/init_git_sync.template.yaml" -e 'd}' \
+  ${SED_COMMAND} -e "/{{INIT_GIT_SYNC}}/{r $TEMPLATE_DIRNAME/init_git_sync.template.yaml" -e 'd}' \
       ${TEMPLATE_DIRNAME}/airflow.template.yaml > ${BUILD_DIRNAME}/airflow.yaml
 fi
 
-sed -i "s|{{CONFIGMAP_GIT_REPO}}|$CONFIGMAP_GIT_REPO|g" ${BUILD_DIRNAME}/airflow.yaml
-sed -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/airflow.yaml
-sed -i "s|{{INIT_DAGS_VOLUME_NAME}}|$INIT_DAGS_VOLUME_NAME|g" ${BUILD_DIRNAME}/airflow.yaml
+${SED_COMMAND} -i "s|{{CONFIGMAP_GIT_REPO}}|$CONFIGMAP_GIT_REPO|g" ${BUILD_DIRNAME}/airflow.yaml
+${SED_COMMAND} -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/airflow.yaml
+${SED_COMMAND} -i "s|{{INIT_DAGS_VOLUME_NAME}}|$INIT_DAGS_VOLUME_NAME|g" ${BUILD_DIRNAME}/airflow.yaml
+${SED_COMMAND} -i "s|{{POD_AIRFLOW_DAGS_VOLUME_NAME}}|$POD_AIRFLOW_DAGS_VOLUME_NAME|g" ${BUILD_DIRNAME}/airflow.yaml
 
-sed "s|{{CONFIGMAP_DAGS_FOLDER}}|$CONFIGMAP_DAGS_FOLDER|g" \
+${SED_COMMAND} "s|{{CONFIGMAP_DAGS_FOLDER}}|$CONFIGMAP_DAGS_FOLDER|g" \
     ${TEMPLATE_DIRNAME}/configmaps.template.yaml > ${BUILD_DIRNAME}/configmaps.yaml
-sed -i "s|{{CONFIGMAP_GIT_REPO}}|$CONFIGMAP_GIT_REPO|g" ${BUILD_DIRNAME}/configmaps.yaml
-sed -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/configmaps.yaml
-sed -i "s|{{CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT}}|$CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT|g" ${BUILD_DIRNAME}/configmaps.yaml
-sed -i "s|{{CONFIGMAP_DAGS_VOLUME_CLAIM}}|$CONFIGMAP_DAGS_VOLUME_CLAIM|g" ${BUILD_DIRNAME}/configmaps.yaml
+${SED_COMMAND} -i "s|{{CONFIGMAP_GIT_REPO}}|$CONFIGMAP_GIT_REPO|g" ${BUILD_DIRNAME}/configmaps.yaml
+${SED_COMMAND} -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/configmaps.yaml
+${SED_COMMAND} -i "s|{{CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT}}|$CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT|g" ${BUILD_DIRNAME}/configmaps.yaml
+${SED_COMMAND} -i "s|{{CONFIGMAP_DAGS_VOLUME_CLAIM}}|$CONFIGMAP_DAGS_VOLUME_CLAIM|g" ${BUILD_DIRNAME}/configmaps.yaml
 
 # Fix file permissions
 sudo chown -R travis.travis $HOME/.kube $HOME/.minikube

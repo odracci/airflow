@@ -180,7 +180,7 @@ data:
     worker_container_tag = latest
     worker_container_image_pull_policy = IfNotPresent
     delete_worker_pods = True
-    git_repo = {{CONFIGMAP_GIT_REPO}}
+    git_repo = https://github.com/{{CONFIGMAP_GIT_REPO}}.git
     git_branch = {{CONFIGMAP_BRANCH}}
     git_subpath = airflow/example_dags_kubernetes/
     git_user =

@@ -143,12 +143,12 @@ class KubernetesExecutorTest(unittest.TestCase):
             json={}
         )
         try:
-            json_result = result.json()
+            result_json = result.json()
         except ValueError:
-            json_result = result.text()
+            result_json = str(result)
 
         self.assertEqual(result.status_code, 200, "Could not trigger a DAG-run: {result}"
-                         .format(result=json_result))
+                         .format(result=result_json))
 
         time.sleep(1)
 
