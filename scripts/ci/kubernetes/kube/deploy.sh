@@ -29,7 +29,7 @@ usage() {
     cat << EOF
   usage: $0 options
   OPTIONS:
-    -d Use PersistentVolume or GitSync for dags_folder. Available options are "persistent" or "git"
+    -d Use PersistentVolume or GitSync for dags_folder. Available options are "persistent_mode" or "git_mode"
 EOF
     exit 1;
 }
@@ -50,10 +50,10 @@ while getopts ":d:" OPTION; do
 done
 
 case ${DAGS_VOLUME} in
-  "persistent")
+  "persistent_mode")
     GIT_SYNC=0
     ;;
-  "git")
+  "git_mode")
     GIT_SYNC=1
     ;;
   *)
