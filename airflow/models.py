@@ -4486,6 +4486,7 @@ class Variable(Base, LoggingMixin):
     @provide_session
     def get(cls, key, default_var=None, deserialize_json=False, session=None):
         obj = session.query(cls).filter(cls.key == key).first()
+        session.commit()
         if obj is None:
             if default_var is not None:
                 return default_var
