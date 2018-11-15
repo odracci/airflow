@@ -59,14 +59,14 @@ second_task = PythonOperator(
         "KubernetesExecutor": {
             "volumes": [
                 {
-                    "name": "test-volume",
+                    "name": "example_kubernetes_test-volume",
                     "hostPath": {"path": "/tmp/"},
                 },
             ],
             "volume_mounts": [
                 {
                     "mountPath": "/foo/",
-                    "name": "test-volume",
+                    "name": "example_kubernetes_test-volume",
                 },
             ]
         }

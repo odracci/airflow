@@ -209,14 +209,9 @@ class WorkerConfiguration(LoggingMixin):
 
     def make_pod(self, namespace, worker_uuid, pod_id, dag_id, task_id, execution_date,
                  airflow_command, kube_executor_config):
-        volumes, volume_mounts = self.init_volumes_and_mounts()
-        for v in kube_executor_config.volumes:
-            volumes[v.name] = v
-        for v in kube_executor_config.volume_mounts:
-            volume_mounts[v.name] = v
-
+        volumes_dict, volume_mounts_dict = self.init_volumes_and_mounts()
         worker_init_container_spec = self._get_init_containers(
-            copy.deepcopy(volume_mounts))
+            copy.deepcopy(volume_mounts_dict))
         resources = Resources(
             request_memory=kube_executor_config.request_memory,
             request_cpu=kube_executor_config.request_cpu,
@@ -227,6 +222,9 @@ class WorkerConfiguration(LoggingMixin):
         annotations = kube_executor_config.annotations.copy()
         if gcp_sa_key:
             annotations['iam.cloud.google.com/service-account'] = gcp_sa_key
+
+        volumes = [value for value in volumes_dict.values()] + kube_executor_config.volumes
+        volume_mounts = [value for value in volume_mounts_dict.values()] + kube_executor_config.volume_mounts
 
         return Pod(
             namespace=namespace,
@@ -246,8 +244,8 @@ class WorkerConfiguration(LoggingMixin):
             service_account_name=self.kube_config.worker_service_account_name,
             image_pull_secrets=self.kube_config.image_pull_secrets,
             init_containers=worker_init_container_spec,
-            volumes=[value for value in volumes.values()],
-            volume_mounts=[value for value in volume_mounts.values()],
+            volumes=volumes,
+            volume_mounts=volume_mounts,
             resources=resources,
             annotations=annotations,
             node_selectors=(kube_executor_config.node_selectors or
