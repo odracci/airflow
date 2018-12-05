@@ -133,8 +133,13 @@ class KubernetesExecutorTest(unittest.TestCase):
             'http://{host}/api/experimental/'
             'dags/{dag_id}/paused/false'.format(host=host, dag_id=dag_id)
         )
+        try:
+            result_json = result.json()
+        except ValueError:
+            result_json = str(result)
+
         self.assertEqual(result.status_code, 200, "Could not enable DAG: {result}"
-                         .format(result=result.json()))
+                         .format(result=result_json))
 
         # Trigger a new dagrun
         result = requests.post(
