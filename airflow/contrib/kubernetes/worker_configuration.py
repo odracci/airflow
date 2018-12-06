@@ -224,7 +224,9 @@ class WorkerConfiguration(LoggingMixin):
             annotations['iam.cloud.google.com/service-account'] = gcp_sa_key
 
         volumes = [value for value in volumes_dict.values()] + (kube_executor_config.volumes or [])
+        print(volumes)
         volume_mounts = [value for value in volume_mounts_dict.values()] + (kube_executor_config.volume_mounts or [])
+        print(volume_mounts)
 
         # volumes = [value for value in volumes_dict.values()]
         # volume_mounts = [value for value in volume_mounts_dict.values()]
