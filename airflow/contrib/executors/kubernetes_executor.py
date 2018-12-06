@@ -217,8 +217,12 @@ class KubeConfig:
     def _validate(self):
         # TODO: use XOR for dags_volume_claim and git_dags_folder_mount_point
         if not self.dags_volume_claim \
-           and not self.dags_volume_host \
-           and (not self.git_repo or not self.git_branch or not self.git_dags_folder_mount_point):
+            and (not self.git_repo or not self.git_branch
+                 or not self.git_dags_folder_mount_point) \
+            and not self.dags_volume_host:
+        # if not self.dags_volume_claim \
+        #    and not self.dags_volume_host \
+        #    and (not self.git_repo or not self.git_branch or not self.git_dags_folder_mount_point):
             raise AirflowConfigException(
                 'In kubernetes mode the following must be set in the `kubernetes` '
                 'config section: `dags_volume_claim` or `dags_volume_host` or '
