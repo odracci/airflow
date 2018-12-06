@@ -110,7 +110,7 @@ case $_MY_OS in
   ;;
 esac
 
-if [ "${GIT_SYNC}" = 0 ]; then
+if [[ "${GIT_SYNC}" = 0 ]]; then
   ${SED_COMMAND} -e "s/{{INIT_GIT_SYNC}}//g" \
       ${TEMPLATE_DIRNAME}/airflow.template.yaml > ${BUILD_DIRNAME}/airflow.yaml
 else
@@ -130,8 +130,12 @@ ${SED_COMMAND} -i "s|{{CONFIGMAP_BRANCH}}|$CONFIGMAP_BRANCH|g" ${BUILD_DIRNAME}/
 ${SED_COMMAND} -i "s|{{CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT}}|$CONFIGMAP_GIT_DAGS_FOLDER_MOUNT_POINT|g" ${BUILD_DIRNAME}/configmaps.yaml
 ${SED_COMMAND} -i "s|{{CONFIGMAP_DAGS_VOLUME_CLAIM}}|$CONFIGMAP_DAGS_VOLUME_CLAIM|g" ${BUILD_DIRNAME}/configmaps.yaml
 
+
+echo "Generated airflow deployment manifesto"
+cat $BUILD_DIRNAME/airflow.yaml
+
 # Fix file permissions
-if [ `whoami` = "travis" ]; then
+if [[ `whoami` = "travis" ]]; then
   sudo chown -R travis.travis $HOME/.kube $HOME/.minikube
 fi
 
