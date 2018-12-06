@@ -138,6 +138,7 @@ class KubernetesExecutorTest(unittest.TestCase):
         except ValueError:
             result_json = str(result)
 
+        check_call(["/usr/local/bin/kubectl", "describe", "pods"])
         self.assertEqual(result.status_code, 200, "Could not enable DAG: {result}"
                          .format(result=result_json))
 
