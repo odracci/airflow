@@ -223,11 +223,11 @@ class WorkerConfiguration(LoggingMixin):
         if gcp_sa_key:
             annotations['iam.cloud.google.com/service-account'] = gcp_sa_key
 
-        # volumes = [value for value in volumes_dict.values()] + kube_executor_config.volumes
-        # volume_mounts = [value for value in volume_mounts_dict.values()] + kube_executor_config.volume_mounts
-
-        volumes = [value for value in volumes_dict.values()]
-        volume_mounts = [value for value in volume_mounts_dict.values()]
+        volumes = [value for value in volumes_dict.values()] + kube_executor_config.volumes
+        volume_mounts = [value for value in volume_mounts_dict.values()] + kube_executor_config.volume_mounts
+        #
+        # volumes = [value for value in volumes_dict.values()]
+        # volume_mounts = [value for value in volume_mounts_dict.values()]
 
         return Pod(
             namespace=namespace,
