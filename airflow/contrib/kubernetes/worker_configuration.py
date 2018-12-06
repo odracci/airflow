@@ -225,8 +225,8 @@ class WorkerConfiguration(LoggingMixin):
 
         volumes = [value for value in volumes_dict.values()]
         volume_mounts = [value for value in volume_mounts_dict.values()]
-        volumes += kube_executor_config.volumes or []
-        volume_mounts += kube_executor_config.volume_mounts or []
+        # volumes += kube_executor_config.volumes or []
+        # volume_mounts += kube_executor_config.volume_mounts or []
 
         # volumes = [value for value in volumes_dict.values()]
         # volume_mounts = [value for value in volume_mounts_dict.values()]

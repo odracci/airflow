@@ -53,24 +53,24 @@ start_task = PythonOperator(
 )
 
 # You can mount volume or secret to the worker pod
-second_task = PythonOperator(
-    task_id="four_task", python_callable=test_volume_mount, dag=dag,
-    executor_config={
-        "KubernetesExecutor": {
-            "volumes": [
-                {
-                    "name": "example-kubernetes-test-volume",
-                    "hostPath": {"path": "/tmp/"},
-                },
-            ],
-            "volume_mounts": [
-                {
-                    "mountPath": "/foo/",
-                    "name": "example-kubernetes-test-volume",
-                },
-            ]
-        }
-    }
-)
-
-start_task.set_downstream(second_task)
+# second_task = PythonOperator(
+#     task_id="four_task", python_callable=test_volume_mount, dag=dag,
+#     executor_config={
+#         "KubernetesExecutor": {
+#             "volumes": [
+#                 {
+#                     "name": "example-kubernetes-test-volume",
+#                     "hostPath": {"path": "/tmp/"},
+#                 },
+#             ],
+#             "volume_mounts": [
+#                 {
+#                     "mountPath": "/foo/",
+#                     "name": "example-kubernetes-test-volume",
+#                 },
+#             ]
+#         }
+#     }
+# )
+#
+# start_task.set_downstream(second_task)
