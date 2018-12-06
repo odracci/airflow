@@ -18,7 +18,7 @@
 #  specific language governing permissions and limitations
 #  under the License.
 
-set -x
+set -ex
 
 DIRNAME=$(cd "$(dirname "$0")"; pwd)
 AIRFLOW_ROOT="$DIRNAME/../.."
@@ -40,7 +40,7 @@ sudo -H $PIP install tox
 
 cd $AIRFLOW_ROOT && $PIP --version && tox --version
 
-if [ -z "$KUBERNETES_VERSION" ];
+if [[ -z "$KUBERNETES_VERSION" ]];
 then
   tox -e $TOX_ENV
 else
