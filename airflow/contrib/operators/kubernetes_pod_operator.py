@@ -146,6 +146,7 @@ class KubernetesPodOperator(BaseOperator):  # pylint: disable=too-many-instance-
                  security_context=None,
                  pod_runtime_info_envs=None,
                  dnspolicy=None,
+                 dns_config=None,
                  *args,
                  **kwargs):
         # https://github.com/apache/airflow/blob/2d0eff4ee4fafcf8c7978ac287a8fb968e56605f/UPDATING.md#unification-of-do_xcom_push-flag
@@ -186,6 +187,7 @@ class KubernetesPodOperator(BaseOperator):  # pylint: disable=too-many-instance-
         self.security_context = security_context or {}
         self.pod_runtime_info_envs = pod_runtime_info_envs or []
         self.dnspolicy = dnspolicy
+        self.dns_config = dns_config
 
     def execute(self, context):
         try:
@@ -235,6 +237,7 @@ class KubernetesPodOperator(BaseOperator):  # pylint: disable=too-many-instance-
             pod.security_context = self.security_context
             pod.pod_runtime_info_envs = self.pod_runtime_info_envs
             pod.dnspolicy = self.dnspolicy
+            pod.dns_config = self.dns_config
 
             launcher = pod_launcher.PodLauncher(kube_client=client,
                                                 extract_xcom=self.do_xcom_push)

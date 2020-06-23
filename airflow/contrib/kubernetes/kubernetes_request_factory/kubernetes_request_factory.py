@@ -214,6 +214,25 @@ class KubernetesRequestFactory:
             req['spec']['dnsPolicy'] = pod.dnspolicy
 
     @staticmethod
+    def extract_dns_config(pod, req):
+        if pod.dns_config:
+            req['spec']['dnsConfig'] = {
+                'nameservers': [
+                    '172.20.0.10',
+                ],
+                'searches': [
+                    f'{pod.namespace}.svc.cluster.local',
+                    'svc.cluster.local',
+                    'cluster.local',
+                    'eu-west-1.compute.internal',
+                ],
+                'options': {
+                    'name': 'ndots',
+                    'value': "1",
+                }
+            }
+
+    @staticmethod
     def extract_image_pull_secrets(pod, req):
         if pod.image_pull_secrets:
             req['spec']['imagePullSecrets'] = [{

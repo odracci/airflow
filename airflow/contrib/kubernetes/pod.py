@@ -120,7 +120,8 @@ class Pod:
             security_context=None,
             configmaps=None,
             pod_runtime_info_envs=None,
-            dnspolicy=None
+            dnspolicy=None,
+            dns_config=None
     ):
         self.image = image
         self.envs = envs or {}
@@ -148,3 +149,4 @@ class Pod:
         self.configmaps = configmaps or []
         self.pod_runtime_info_envs = pod_runtime_info_envs or []
         self.dnspolicy = dnspolicy
+        self.dns_config = dns_config
